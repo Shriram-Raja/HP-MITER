@@ -9,19 +9,19 @@ The following is the list of priority assignment algorithms and schedulability t
 - Deadline Minus Computation Monotonic (D-CMPO)
 - Deadline Minus kC (DkC): k is a function of the number of processors in the system
 - Audsley's Optimal Priority Assignment (OPA): implementation of [[1]](#References).
-- MITER-based Optimization Method: implementation of [2](#References). This method is referred to as MUTER in the code, as per the name given in the RTSS 2018 paper. 
+- MITER-based Optimization Method: implementation of [[2]](#References). This method is referred to as MUTER in the code, as per the name given in the RTSS 2018 paper. 
 - Hybrid Priority Assignment using MITER (HP-MITER): Hybrid Priority Assignment method using a combination of the MITER-based method and DkC.
 
 
 ## Schedulability Analyses
-- Deadline Analysis with Limited Carry-in (DA-LC): implementation of the method defined in [3](#DA-LC).
-- GSYY: implementation of the test defined in [4](#GSYY).
-- ZLL: implementation of the test defined in [5](#ZLL).
+- Deadline Analysis with Limited Carry-in (DA-LC): implementation of the method defined in [[3]](#References).
+- GSYY: implementation of the test defined in [[4]](#References).
+- ZLL: implementation of the test defined in [[5]](#References).
 
 
 ## **IMPORTANT NOTE:** 
 - The MITER algorithm uses the CPLEX optimization solver, however as it is proprietary, it has not been included in this repository.
-- HP-MITER requires the implementation of the EPE-ZLL test [6](#EPE-ZLL). We obtained this implementation from the authors. However, as we do not yet have permission to post their code publicly, this implementation is also not included in this repository. 
+- HP-MITER requires the implementation of the EPE-ZLL test [[6]](#References). We obtained this implementation from the authors. However, as we do not yet have permission to post their code publicly, this implementation is also not included in this repository. 
 
 
 ## How to run *main.cpp*
@@ -52,7 +52,7 @@ $ ./GlobalFixedPriorityScheduling
 
 ## Acknowledgement
 
-- We thank the authors of [6](#EPE-ZLL) for providing the implementation of their work.
+- We thank the authors of [[6]](#References) for providing the implementation of their work.
  
 - We acknowledge Advanced Research Computing at Virginia Tech for providing computational resources and technical support that have contributed to the testing of this work. URL: https://arc.vt.edu/.
 
