@@ -21,7 +21,7 @@ The following is the list of priority assignment algorithms and schedulability t
 
 ## **IMPORTANT NOTE:** 
 - The MITER algorithm uses the CPLEX optimization solver, however as it is proprietary, it has not been included in this repository.
-- HP-MITER requires the implementation of the EPE-ZLL test (Quan Zhou, Jianjun Li, and Guohui Li, _Excluding Parallel Execution to Improve Global Fixed Priority Response Time Analysis_, https://doi.org/10.1145/3477035). We obtained this implementation from the authors. As we have not obtained permission to make their code public, this is also not included in this repository. 
+- HP-MITER requires the implementation of the EPE-ZLL test (Quan Zhou, Jianjun Li, and Guohui Li, _Excluding Parallel Execution to Improve Global Fixed Priority Response Time Analysis_, https://doi.org/10.1145/3477035). We obtained this implementation from the authors. However, as we do not yet have permission to post their code publicly, this implementation is also not included in this repository. 
 
 
 ## How to run *main.cpp*
