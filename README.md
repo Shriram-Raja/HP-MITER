@@ -2,10 +2,24 @@
 
 Code repository for Priority Assignment for Global Fixed Priority Scheduling on Multiprocessor Using Response Time Estimation Range.
 
-## Priority Assignment Methods
+The following is the list of priority assignment algorithms and schedulability tests implemented in this repository:
 
-## Important Note
-- THe
+### Priority Assignment Methods
+- Deadline Monotonic Priority Ordering (DMPO)
+- Deadline Minus Computation Monotonic (D-CMPO)
+- Deadline Minus kC (DkC): k is a function of the number of processors in the system
+- Audsley's Optimal Priority Assignment (OPA)
+- MITER-based Optimization Method (MITER): Implementation of _**The Concept of Response Time Estimation Range for Optimizing Systems Scheduled with Fixed Priority**_, RTSS 2018
+- Hybrid Priority Assignment using MITER (HP-MITER): Hybrid Priority Assignment method using a combination of MITER and DkC
+
+### Schedulability Analyses
+- Deadline Analysis with Limited Carry-in (DA-LC): implementation of Davis, R.I., Burns, A. _Improved priority assignment for global fixed priority pre-emptive scheduling in multiprocessor real-time systems_ Real-Time Syst 47, 1–40 (2011). https://doi.org/10.1007/s11241-010-9106-5
+- GSYY: implementation of N. Guan, M. Stigge, W. Yi and G. Yu, "_New Response Time Bounds for Fixed Priority Multiprocessor Scheduling_", 2009 30th IEEE Real-Time Systems Symposium, Washington, DC, USA, 2009, pp. 387-397, doi: 10.1109/RTSS.2009.11.
+- ZLL: Implementation of Q. Zhou, G. Li and J. Li, "_Improved Carry-in Workload Estimation for Global Multiprocessor Scheduling_", in IEEE Transactions on Parallel and Distributed Systems, vol. 28, no. 9, pp. 2527-2538, 1 Sept. 2017, doi: 10.1109/TPDS.2017.2679195.
+
+**IMPORTANT NOTE:** 
+- The MITER algorithm uses the CPLEX optimization solver, however as it is proprietary, it has not been included in this repository.
+- HP-MITER requires the implementation of EPE-ZLL (Quan Zhou, Jianjun Li, and Guohui Li. 2021. Excluding Parallel Execution to Improve Global Fixed Priority Response Time Analysis. ACM Trans. Embed. Comput. Syst. 20, 5s, Article 104 (October 2021), 24 pages. https://doi.org/10.1145/3477035). We obtained this implementation from the authors. As we have not obtained permission to make their code public, this is also not included in this repository. 
 
 ## How to run *main.cpp*
 
@@ -31,8 +45,7 @@ $ ./GlobalFixedPriorityScheduling
 ```
 
 - After the run is complete, the file named in Line 49 will be created in the root directory. 
-- It can be moved to the **Results** directory which has sub directories with the results of other runs. 
-- One of these sub directories can be duplicated, the *.txt* file in the duplicate replaced with the new one and the *.py* file can be modified to obtain the required graphs. 
+- This file can be parsed with a .py script to obtain graphs. 
 
 ## Modifying Priority Orderings (POs)
 
