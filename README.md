@@ -58,14 +58,14 @@ $ ./GlobalFixedPriorityScheduling
 
 ## References
 
-\[1] N.C. Audsley, On priority assignment in fixed priority scheduling, Information Processing Letters, Volume 79, Issue 1, 2001, Pages 39-44, ISSN 0020-0190, https://doi.org/10.1016/S0020-0190(00)00165-4.
+\[1] N.C. Audsley. _On priority assignment in fixed priority scheduling_. Information Processing Letters, 79(1):39–44, 2001, https://doi.org/10.1016/S0020-0190(00)00165-4.
 <br /><br />
-\[2] Y. Zhao and H. Zeng, "The Concept of Response Time Estimation Range for Optimizing Systems Scheduled with Fixed Priority," 2018 IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS), Porto, Portugal, 2018, pp. 283-294, https://doi.org/10.1109/RTAS.2018.00036.
+\[2] Y. Zhao and H. Zeng. _The Concept of Response Time Estimation Range for Optimizing Systems Scheduled with Fixed Priority_. In IEEE Real-Time and Embedded Technology and Applications Symposium, pages 283–294, 2018, https://doi.org/10.1109/RTAS.2018.00036.
 <br /><br />
-\[3] Davis, R.I., Burns, A. Improved priority assignment for global fixed priority pre-emptive scheduling in multiprocessor real-time systems. Real-Time Syst 47, 1–40 (2011). https://doi.org/10.1007/s11241-010-9106-5
+\[3] R. Davis and A. Burns. _Improved Priority Assignment for Global Fixed Priority Pre-emptive Scheduling in Multiprocessor Real-Time Systems_. Real-Time Systems, 47(1):1–40, 2011, https://doi.org/10.1007/s11241-010-9106-5
 <br /><br />
-\[4] N. Guan, M. Stigge, W. Yi and G. Yu, "New Response Time Bounds for Fixed Priority Multiprocessor Scheduling," 2009 30th IEEE Real-Time Systems Symposium, Washington, DC, USA, 2009, pp. 387-397, https://doi.org/10.1109/RTSS.2009.11.
+\[4] N. Guan, M. Stigge, W. Yi, and G. Yu. _New Response Time Bounds for Fixed Priority Multiprocessor Scheduling_. In 30th IEEE Real-Time Systems Symposium, pages 387–397, 2009, https://doi.org/10.1109/RTSS.2009.11.
 <br /><br />
-\[5] Q. Zhou, G. Li and J. Li, "Improved Carry-in Workload Estimation for Global Multiprocessor Scheduling," in IEEE Transactions on Parallel and Distributed Systems, vol. 28, no. 9, pp. 2527-2538, 1 Sept. 2017, https://doi.org/10.1109/TPDS.2017.2679195.
+\[5] Q. Zhou, G. Li, and J. Li. _Improved Carry-in Workload Estimation for Global Multiprocessor Scheduling_. IEEE Transactions on Parallel and Distributed Systems, 28(9):2527–2538, 2017, https://doi.org/10.1109/TPDS.2017.2679195.
 <br /><br />
-\[6] Quan Zhou, Jianjun Li, and Guohui Li. 2021. Excluding Parallel Execution to Improve Global Fixed Priority Response Time Analysis. ACM Trans. Embed. Comput. Syst. 20, 5s, Article 104 (October 2021), 24 pages. https://doi.org/10.1145/3477035
+\[6] Q. Zhou, J. Li, and G. Li. _Excluding Parallel Execution to Improve Global Fixed Priority Response Time Analysis_. ACM Transactions on Embedded Computing Systems, 20(5s):1–24, 2021, https://doi.org/10.1145/3477035
