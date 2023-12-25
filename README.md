@@ -8,20 +8,20 @@ The following is the list of priority assignment algorithms and schedulability t
 - Deadline Monotonic Priority Ordering (DMPO)
 - Deadline Minus Computation Monotonic (D-CMPO)
 - Deadline Minus kC (DkC): k is a function of the number of processors in the system
-- Audsley's Optimal Priority Assignment (OPA): implementation of N.C. Audsley, _On priority assignment in fixed priority scheduling_ (https://doi.org/10.1016/S0020-0190(00)00165-4)
-- MITER-based Optimization Method: implementation of Y. Zhao and H. Zeng, _The Concept of Response Time Estimation Range for Optimizing Systems Scheduled with Fixed Priority_ (https://doi.org/10.1109/RTAS.2018.00036). This method is referred to as MUTER in the code, as per the name given in the RTSS 2018 paper. 
-- Hybrid Priority Assignment using MITER (HP-MITER): Hybrid Priority Assignment method using a combination of the MITER-based method and DkC
+- Audsley's Optimal Priority Assignment (OPA): implementation of N.C. Audsley, _On priority assignment in fixed priority scheduling_, https://doi.org/10.1016/S0020-0190(00)00165-4.
+- MITER-based Optimization Method: implementation of Y. Zhao and H. Zeng, _The Concept of Response Time Estimation Range for Optimizing Systems Scheduled with Fixed Priority_, https://doi.org/10.1109/RTAS.2018.00036. This method is referred to as MUTER in the code, as per the name given in the RTSS 2018 paper. 
+- Hybrid Priority Assignment using MITER (HP-MITER): Hybrid Priority Assignment method using a combination of the MITER-based method and DkC.
 
 
 ## Schedulability Analyses
-- Deadline Analysis with Limited Carry-in (DA-LC): implementation of the method defined in Davis, R.I., Burns, A., _Improved priority assignment for global fixed priority pre-emptive scheduling in multiprocessor real-time systems_ (https://doi.org/10.1007/s11241-010-9106-5)
-- GSYY: implementation of the test defined in N. Guan, M. Stigge, W. Yi and G. Yu, _New Response Time Bounds for Fixed Priority Multiprocessor Scheduling_ (https://doi.org/10.1109/RTSS.2009.11)
-- ZLL: implementation of the test defined in Q. Zhou, G. Li and J. Li, _Improved Carry-in Workload Estimation for Global Multiprocessor Scheduling_ (https://doi.org/10.1109/TPDS.2017.2679195)
+- Deadline Analysis with Limited Carry-in (DA-LC): implementation of the method defined in Davis, R.I., Burns, A., _Improved priority assignment for global fixed priority pre-emptive scheduling in multiprocessor real-time systems_, https://doi.org/10.1007/s11241-010-9106-5.
+- GSYY: implementation of the test defined in N. Guan, M. Stigge, W. Yi and G. Yu, _New Response Time Bounds for Fixed Priority Multiprocessor Scheduling_, https://doi.org/10.1109/RTSS.2009.11.
+- ZLL: implementation of the test defined in Q. Zhou, G. Li and J. Li, _Improved Carry-in Workload Estimation for Global Multiprocessor Scheduling_, https://doi.org/10.1109/TPDS.2017.2679195.
 
 
 ## **IMPORTANT NOTE:** 
 - The MITER algorithm uses the CPLEX optimization solver, however as it is proprietary, it has not been included in this repository.
-- HP-MITER requires the implementation of the EPE-ZLL test (Quan Zhou, Jianjun Li, and Guohui Li, _Excluding Parallel Execution to Improve Global Fixed Priority Response Time Analysis_ https://doi.org/10.1145/3477035). We obtained this implementation from the authors. As we have not obtained permission to make their code public, this is also not included in this repository. 
+- HP-MITER requires the implementation of the EPE-ZLL test (Quan Zhou, Jianjun Li, and Guohui Li, _Excluding Parallel Execution to Improve Global Fixed Priority Response Time Analysis_, https://doi.org/10.1145/3477035). We obtained this implementation from the authors. As we have not obtained permission to make their code public, this is also not included in this repository. 
 
 
 ## How to run *main.cpp*
@@ -52,6 +52,6 @@ $ ./GlobalFixedPriorityScheduling
 
 ## Acknowledgement
 
+- We thank the authors of _Excluding Parallel Execution to Improve Global Fixed Priority Response Time Analysis_, https://doi.org/10.1145/3477035 for providing the implementation of their work.
+ 
 - We acknowledge Advanced Research Computing at Virginia Tech for providing computational resources and technical support that have contributed to the testing of this work. URL: https://arc.vt.edu/.
-
-- We also thank the authors of _Excluding Parallel Execution to Improve Global Fixed Priority Response Time Analysis_ https://doi.org/10.1145/3477035 for providing the implementation of their work.
