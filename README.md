@@ -58,7 +58,7 @@ $ ./GlobalFixedPriorityScheduling
 
 ## References
 <div id = "OPA"></div>
-\[1] N.C. Audsley, On priority assignment in fixed priority scheduling, Information Processing Letters, Volume 79, Issue 1, 2001, Pages 39-44, ISSN 0020-0190, https://doi.org/10.1016/S0020-0190(00)00165-4.
+[1] N.C. Audsley, On priority assignment in fixed priority scheduling, Information Processing Letters, Volume 79, Issue 1, 2001, Pages 39-44, ISSN 0020-0190, https://doi.org/10.1016/S0020-0190(00)00165-4.
 
 <div id = "MITER"></div>
 \[2] Y. Zhao and H. Zeng, "The Concept of Response Time Estimation Range for Optimizing Systems Scheduled with Fixed Priority," 2018 IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS), Porto, Portugal, 2018, pp. 283-294, doi: 10.1109/RTAS.2018.00036.
