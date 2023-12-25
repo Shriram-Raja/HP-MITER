@@ -55,3 +55,6 @@ $ ./GlobalFixedPriorityScheduling
 - We thank the authors of _Excluding Parallel Execution to Improve Global Fixed Priority Response Time Analysis_, https://doi.org/10.1145/3477035 for providing the implementation of their work.
  
 - We acknowledge Advanced Research Computing at Virginia Tech for providing computational resources and technical support that have contributed to the testing of this work. URL: https://arc.vt.edu/.
+
+## References
+\[1] 
