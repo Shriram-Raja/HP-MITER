@@ -12,11 +12,15 @@ The following is the list of priority assignment algorithms and schedulability t
 - MITER-based Optimization Method: implementation of [[2]](#References). This method is referred to as MUTER in the code, as per the name given in the RTSS 2018 paper. 
 - Hybrid Priority Assignment using MITER (HP-MITER): Hybrid Priority Assignment method using a combination of the MITER-based method and DkC.
 
+Refer to _MultiProcessorSystem.cpp_
+
 
 ## Schedulability Analyses
 - Deadline Analysis with Limited Carry-in (DA-LC): implementation of the method defined in [[3]](#References).
 - GSYY: implementation of the test defined in [[4]](#References).
 - ZLL: implementation of the test defined in [[5]](#References).
+
+Refer to _SchedulabilityAnalysis.cpp_
 
 
 ## **IMPORTANT NOTE:** 
