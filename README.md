@@ -8,7 +8,7 @@ The following is the list of priority assignment algorithms and schedulability t
 - Deadline Monotonic Priority Ordering (DMPO)
 - Deadline Minus Computation Monotonic (D-CMPO)
 - Deadline Minus kC (DkC): k is a function of the number of processors in the system
-- Audsley's Optimal Priority Assignment (OPA): implementation of [1](#OPA).
+- Audsley's Optimal Priority Assignment (OPA): implementation of [[1]](#OPA).
 - MITER-based Optimization Method: implementation of [2](#MITER). This method is referred to as MUTER in the code, as per the name given in the RTSS 2018 paper. 
 - Hybrid Priority Assignment using MITER (HP-MITER): Hybrid Priority Assignment method using a combination of the MITER-based method and DkC.
 
