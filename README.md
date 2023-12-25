@@ -9,8 +9,8 @@ The following is the list of priority assignment algorithms and schedulability t
 - Deadline Minus Computation Monotonic (D-CMPO)
 - Deadline Minus kC (DkC): k is a function of the number of processors in the system
 - Audsley's Optimal Priority Assignment (OPA)
-- MITER-based Optimization Method (MITER): Implementation of _**The Concept of Response Time Estimation Range for Optimizing Systems Scheduled with Fixed Priority**_, RTSS 2018
-- Hybrid Priority Assignment using MITER (HP-MITER): Hybrid Priority Assignment method using a combination of MITER and DkC
+- MITER-based Optimization Method: Implementation of Y. Zhao and H. Zeng, "_The Concept of Response Time Estimation Range for Optimizing Systems Scheduled with Fixed Priority_", 2018 IEEE Real-Time and Embedded Technology and Applications Symposium (RTAS), Porto, Portugal, 2018, pp. 283-294, doi: 10.1109/RTAS.2018.00036. - this is referred to as MUTER in the code, as per the name given in the RTSS 2018 paper. 
+- Hybrid Priority Assignment using MITER (HP-MITER): Hybrid Priority Assignment method using a combination of the MITER-based method and DkC
 
 ### Schedulability Analyses
 - Deadline Analysis with Limited Carry-in (DA-LC): implementation of Davis, R.I., Burns, A. _Improved priority assignment for global fixed priority pre-emptive scheduling in multiprocessor real-time systems_ Real-Time Syst 47, 1–40 (2011). https://doi.org/10.1007/s11241-010-9106-5
