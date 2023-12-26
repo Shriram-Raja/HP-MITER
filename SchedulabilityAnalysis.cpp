@@ -398,6 +398,13 @@ namespace MPScheduling {
 
 	// *********************** Aug.5 Patch one: Add ZLL class for experiments ******************************
 
+
+	// ---------------------------------- Add EPE class for experiments ------------------------------------
+	// EPE is based on existing schedulability test GSYY
+	// Notation: 
+	// - CLIP is defined as [[a]]_b^c {Page 4, Section 2.1}
+	// - t is the response time x in equation
+
 	// ---------------------------------- Part 1: GSYY base ------------------------------------------------
 	// Constructor
 	ResponseTimeAnalysis_EPE::ResponseTimeAnalysis_EPE() {
@@ -551,66 +558,1080 @@ namespace MPScheduling {
 		}*/
 	}
 
-	// ---------------------------------- Part 2a: Overloaded GSYY for EPE ------------------------------------------------
 
-	// Calculate RHS of {Eq. 6}
-	ValueType ResponseTimeAnalysis_EPE::GSYY_RHS(MultiProcessorSystem & rcSystem, int iTaskIndex, ValueType t, vector<vector<ValueType>> & rvectorResponseTime, const PriorityAssignment & rcPA, int a) {
-		int iNumTasks = rcSystem.getNumTasks();
-		int iThisPriority = rcPA.getPriority(iTaskIndex);
-		int iNumProcessors = rcSystem.getNumProcessors();
-		auto C = a + 1; // a is the C_k value for which we are calculating RT
-		//cout << "\nC = " << C << " x = " << t;
-		multiset<ValueType> heap; // Store the interference {Eq.3 & 4} of higher priority tasks ascendingly, allow duplicate values
-		ValueType cWorkLoad = 0;		
+	// ---------------------------------- Part 2: EPE related calculation ------------------------------------------------
 
-		for (int i = 0; i < iNumTasks; i++) {
-			if (rcPA.getPriority(i) >= iThisPriority) continue; // The larger the number, the smaller the priority
-			auto wnc = GSYY_WNC(rcSystem, i, t);
-			if(rvectorResponseTime[i].back() == rvectorResponseTime[i][-1]) cout << "-1 is correct";
-			auto wci = GSYY_WCI(rcSystem, i, t, rvectorResponseTime[i].back()/*[-1]*/);
-			auto nc = CLIP(wnc, 0, t - C + 1); 						// {Eq. 4}
-			auto ci = CLIP(wci, 0, t - C + 1); // {Eq. 3}
-			//cout << "\nEq3; i = " << iTaskIndex << " Ici: " << ci;
-			//cout << "\nEq4; i = " << iTaskIndex << " Inc: " << nc;
-			heap.insert(ci - nc);
-			//cout << "\nValue inserted into heap = " << ci - nc;
-			if (heap.size() > iNumProcessors - 1){
-				heap.erase(heap.begin());   	// {Eq. 10} The number of interference tasks is upper bounded by m - 1
-			}
-			cWorkLoad += nc; 					// Add all I_k^NC
-			//cout << "\nChanging Workload = " << cWorkLoad;
-		}
-		for (auto ele : heap)
+	int ResponseTimeAnalysis_EPE::GSYY2(int n, int m, vector<vector<ValueType>> &taskset, vector<ValueType> &schedulability)
+{
+	double beginning, end, sumi, diffi[200];
+	int flagchange, result, i, j, k, t, l, o, x, y, z, y1, y2, x1, x2, x3, x4, limitednumber, maxaddedwnc, maxaddedwci;
+	int interference;
+	int ce, ce1, ce2, ce3, ce4, ce5, ce6, ce7, ce8, ce9;
+	flagchange = 1;
+	int diffw[1000], wnc[1000], wci[1000];
+	int wcrt[200][401];
+	int ici[200], inc[200];
+	int oici[200], oinc[200];
+	int addedwnc[200], addedwci[200], addedinc[200], addedici[200];
+	int minworkload[401];
+	int wcet;
+	k = 0;
+	////////////////////////////////////////////////////////////////////////Ϊ���񸳳�ʼWCRT
+	while (k<m)
+	{
+		taskset[k][3] = taskset[k][0];
+		k++;
+	}
+	while (k<n)
+	{
+		taskset[k][3] = taskset[k][1];
+		k++;
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////��ʼ������ɵ�����
+	k = 0;
+	while (k<m)
+	{
+		i = 1;
+		while (i <= taskset[k][0])
 		{
-			cWorkLoad += ele;	// Add m - 1 largest I_k^CI
-			//cout << "\nEle = " << ele << " cWorkLoad = " << cWorkLoad;
+			wcrt[k][i] = i;
+			i++;
 		}
-		//cout << "\nEq6 Omega: " << cWorkLoad << " RHS: " << (cWorkLoad / iNumProcessors) + C;
-		return (cWorkLoad / iNumProcessors) + C;  // {Eq. 6 RHS}
+		schedulability[k] = 1;
+		k++;
 	}
-
-	// Terminate Eq. 6 when response time exceeds the deadline (i.e.,cBound) of the task
-	ValueType ResponseTimeAnalysis_EPE::GSYY_RTTerminateOnBound(MultiProcessorSystem & rcSystem, int iTaskIndex, vector<vector<ValueType>> & rvectorResponseTime, const PriorityAssignment & rcPA, ValueType cBound, int a) {
-		Timer cTimer; 
-		cTimer.Start();		
-		ValueType t = a + 1; // current C value
-		//cout << __FUNCTION__ << "x = " << t;
-		ValueType t_RHS = GSYY_RHS(rcSystem, iTaskIndex, t, rvectorResponseTime, rcPA, a);
-		while (t != t_RHS) {
-			//cout << "\n&&&&&&&&&&&&&&&&&&&&&&&Start&&&&&&&&&&&&&&&&&&&&&&&&&&&  GSYY  t: " << t << " RHS: " << t_RHS;
-			t = t_RHS;
-			if (t > cBound) break;
-			t_RHS = GSYY_RHS(rcSystem, iTaskIndex, t, rvectorResponseTime, rcPA, a);
-
+	while (k<n)
+	{
+		schedulability[k] = 0;
+		k++;
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////��ʼ��wcrt
+	k = 0;
+	while (k<n)
+	{
+		wcrt[k][0] = 0;
+		k++;
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	k = m;
+	while (k<n)
+	{
+		//////////////////////////////////////////////////////////////////////////��ʼ��inc��oici
+		i = 0;
+		while (i<n)
+		{
+			oinc[i] = 0;
+			i++;
 		}
-		cTimer.Stop(); 
-		dRTTerminateOnBoundTime += cTimer.getElapsedTime_ms();
-		//cout << "\n&&&&&&&&&&&&&&&&&&&&&&&End&&&&&&&&&&&&&&&&&&&&&&&&&&&  GSYY  t: " << t << " RHS: " << t_RHS;
-		return t;
+		i = 0;
+		while (i<n)
+		{
+			oici[i] = 0;
+			i++;
+		}
+		i = 0;
+		while (i < 401)
+		{
+			minworkload[i] = 0;
+			i++;
+		}
+		//////////////////////////////////////////////////////////////////////////////////////////
+		wcet = 1;
+/*		for(int iteration = 0; iteration < 3; iteration++)
+		{
+			cout << "\nTask " << iteration << "\n";
+			for(int jteration = 0; jteration < 4; jteration++)
+			{
+				cout << "Index: " << jteration << " value: " << taskset[iteration][jteration] << "\n";
+			}
+		}*/
+		/////////////////////////////////////////////////////////////////////����Ck=wcetʱk��WCRT
+		while (wcet <= taskset[k][0])
+		{
+			t = wcrt[k][wcet - 1] + 1;
+			while (t <= taskset[k][1])
+			{
+				x = t - wcrt[k][wcet - 1];              //���䳤��
+				i = 0;
+				while (i<k)////////////////////////////////////////////////////////����i��k�ĸ���
+				{
+					//////////////////////////////////////////////////////////����t�����ڵ�W^{NC}
+					if (t%taskset[i][2]>taskset[i][0])
+					{
+						wnc[i] = int(t / taskset[i][2])*taskset[i][0] + taskset[i][0];
+					}
+					else
+					{
+						wnc[i] = int(t / taskset[i][2])*taskset[i][0] + int(t%taskset[i][2]);
+					}
+					/////////////////////////////////////////////////////////////////////////////
+					//////////////////////////////////////////////////////////����t�����ڵ�W^{CI}
+					if (t <= taskset[i][0])
+					{
+						wci[i] = t;
+					}
+					else
+					{
+						if ((t - taskset[i][0]) % taskset[i][2] > taskset[i][2] - taskset[i][3])
+						{
+							wci[i] = (int((t - taskset[i][0]) / taskset[i][2]) + 1)*taskset[i][0] + (t - taskset[i][0]) % taskset[i][2] - taskset[i][2] + taskset[i][3];
+						}
+						else
+						{
+							wci[i] = (int((t - taskset[i][0]) / taskset[i][2]) + 1)*taskset[i][0];
+						}
+					}
+					/////////////////////////////////////////////////////////////////////////////////
+					/////////////////////////////////////////////////////����WNC��WCI���������
+					y = 0;
+					maxaddedwnc = 0;
+					while (y < taskset[i][2]&&y<=wcrt[k][wcet-1])
+					{
+						/////////////yʱ[0��wcrt[k][wcet-1])������i���nc����
+						x1=(wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0] + min(y, taskset[i][0]); ///////////////����i��[0��wcrt[k][wcet-1])�ϵ����nc���� 
+						y1 = 0;///////////////////////////////////////////////����k��[wcrt[k][wcet-1]-y,wcrt[k][wcet-1])����Сִ��ʱ�䣻���y��Ӧ�Ĺ���������ֵ����,����i��[wcrt[k][wcet-1]-y,wcrt[k][wcet-1])��������k����С����
+						while (wcrt[k][y1]+1 <= x + y)
+						{
+							y1++;
+							if (y1 == wcet)
+							{
+								break;
+							}
+						}
+						y1 = y1 - 1;
+						if (y1 > y)
+						{
+							y++;
+							continue;
+						}
+						if (y1 > taskset[i][0])
+							y1 = taskset[i][0];
+						if (y<= taskset[i][0])////////////////////////////////////////////////���x1������i��[0��wcrt[k][wcet-1])�϶�����k��������
+						{
+							x1 = x1 - y1;
+						}
+						else
+						{
+							y2 = 0;
+							while (wcrt[k][y2] <= wcrt[k][wcet - 1] - y + taskset[i][0])
+							{
+								y2++;
+							}
+							y2 = y2 - 1;   
+							x1 = x1-max(y1 + y2 - (wcet - 1), 0);
+						}
+						if (x1 < minworkload[i])
+						{
+							y++;
+							continue;///////////////////////////////////wcrt[k][wcet-1]-y������Ϊ�ͷ�ʱ��
+						}
+						else
+						{
+							if (minworkload[i] <= (wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0])/////////////y����Ӧ��Job����ִ��
+							{
+								if (taskset[i][3] <= y)
+								{
+									x2 = max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);////x2ΪW�������
+								}
+								else
+								{
+									x2 = min(min(taskset[i][3]-y,taskset[i][0]-y1),x)+ max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);
+								}
+							}
+							else////////////////////////////////////////////////////[0,wcrt[k][wcet-1])��i����ִ��minworkload[i]-(wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0]
+							{
+								y2 = minworkload[i] - (wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0]+y1;////////////////////���y��Ӧ�Ĺ���������ֵ���أ���ô�˹�����[wcrt[k][wcet-1]-y,wcrt[k][wcet-1])�ϵ���С����
+								if (taskset[i][3] <= y)
+								{
+									x2 = max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);////x2ΪW�������
+								}
+								else
+								{
+									x2 = min(min(taskset[i][3] - y, max(taskset[i][0] - y2,0)), x) + max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);
+								}							
+							}
+							if (maxaddedwnc < x2)
+							{
+								maxaddedwnc = x2;
+							}
+						}
+						y++;
+					}
+					y = 0;
+					maxaddedwci = 0;
+					while (y < taskset[i][2])
+					{
+						/////////////yʱ[0��wcrt[k][wcet-1])������i���nc����
+						if (y <= wcrt[k][wcet - 1])
+						{
+							x1 = (wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0] + min(y, taskset[i][0]) + max(min((wcrt[k][wcet - 1] - y) % taskset[i][2] - taskset[i][2] + taskset[i][3], taskset[i][0]), 0);
+							y1 = 0;/////////////////////////    [ R_k^{wcet-1}-y, R_k^{wcet-1} )�ϵ���С����ʱ��  
+							while (wcrt[k][y1]+1 <= x + y)
+							{
+								y1++;
+								if (y1 == wcet)
+								{
+									break;
+								}
+							}
+							y1 = y1 - 1;
+							if (y1 > y)
+							{
+								y++;
+								continue;
+							}
+							if (y1 > taskset[i][0])
+								y1 = taskset[i][0];
+							if (y <= taskset[i][0])
+							{
+								x1 = x1 - y1;
+							}
+							else
+							{
+								y2 = 0;
+								while (wcrt[k][y2] <= wcrt[k][wcet - 1] - y + taskset[i][0])
+								{
+									y2++;
+								}
+								y2 = y2 - 1;
+								x1 = x1 - max(y1 + y2 - (wcet - 1), 0);
+							}
+							if (x1 < minworkload[i])
+							{
+								y++;
+								continue;///////////////////////////////////wcrt[k][wcet-1]-y������Ϊ�ͷ�ʱ��
+							}
+							else
+							{
+								if (minworkload[i] <= (wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0] + max(min((wcrt[k][wcet - 1] - y) % taskset[i][2] - taskset[i][2] + taskset[i][3], taskset[i][0]), 0))/////////////y����Ӧ��Job����ִ��
+								{
+									if (taskset[i][3] <= y)
+									{
+										x2 = max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max(x + y - taskset[i][2], 0) % taskset[i][2], taskset[i][0]);
+									}
+									else
+									{
+										x2 = min(min(taskset[i][0]-y1, taskset[i][3]-y),x) + max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max(x + y - taskset[i][2], 0) % taskset[i][2], taskset[i][0]);
+									}
+								}
+								else////////////////////////////////////////////////////[0,wcrt[k][wcet-1])��i����ִ��minworkload[i]-(wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0]
+								{
+									y2 = minworkload[i] - (wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0] - max(min((wcrt[k][wcet - 1] - y) % taskset[i][2] - taskset[i][2] + taskset[i][3], taskset[i][0]), 0)+y1;
+									if (taskset[i][3] <= y)
+									{
+										x2 = max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max(x + y - taskset[i][2], 0) % taskset[i][2], taskset[i][0]);
+									}
+									else
+									{
+										x2 = min(min(max(taskset[i][0] - y2,0), taskset[i][3] - y),x) + max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max(x + y - taskset[i][2], 0) % taskset[i][2], taskset[i][0]);
+									}
+								}
+								if (maxaddedwci < x2)
+								{
+									maxaddedwci = x2;
+								}
+							}
+						}
+						else///////////////////////y>wcrt[k][wcet-1]
+						{
+							y1 = wcet-1;///////////////////////////////////////////////////////////////�������i��wcrt[k][wcet-1]��ִ�У�����i��[0,wcrt[k][wcet-1])�ϵ���С����Ϊy1
+							if (y1>taskset[i][0])
+								y1 = taskset[i][0];
+							if (taskset[i][3] >= y)
+							{
+								x1 = min(taskset[i][0], wcrt[k][wcet-1]);////////////////[0,wcrt[k][wcet-1])�ϵ������
+								if (wcrt[k][wcet - 1] <= taskset[i][0])
+									x1 = x1 - y1;////////////////////////////////////////[0,wcrt[k][wcet-1])�ϵ�������
+								else
+								{
+									y2 = 0;
+									while (wcrt[k][y2] <= taskset[i][0])
+									{
+										y2++;
+										if (y2 == wcet)
+										{
+											break;
+										}
+									}
+									y2 = y2 - 1;
+									x1 = x1 - y2;
+								}
+							}
+							else
+							{
+								x1 = max(min(taskset[i][0], taskset[i][3] + wcrt[k][wcet - 1] - y), 0);
+								y2 = 0;
+								while (wcrt[k][y2] <= x1)
+								{
+									y2++;
+									if (y2 == wcet)
+									{
+										break;
+									}
+								}
+								y2 = y2 - 1;
+								x1 = x1 - y2;
+							}
+							if (x1 < minworkload[i])
+							{
+								y++;
+								continue;///////////////////////////////////wcrt[k][wcet-1]-y������Ϊ�ͷ�ʱ��
+							}
+							else
+							{
+								y2 = minworkload[i] + y1;////////     �������i��wcrt[k][wcet-1]֮��ִ�У� ��Ҫ����+��С����
+								if (taskset[i][3] <= y)
+									x2 = max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);        ////x2ΪW�������
+								else
+									x2 = min(min(max(min(taskset[i][0], taskset[i][3] - y + wcrt[k][wcet - 1]) - y2, 0),taskset[i][3]-y), x)+max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);
+								if (maxaddedwci < x2)
+								{
+									maxaddedwci = x2;
+								}
+							}
+						}
+						y++;
+					}
+					/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+					//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////�������W=I1+W2
+					if (wnc[i]>oinc[i] + maxaddedwnc)
+						wnc[i] = oinc[i] + maxaddedwnc;
+					if (wci[i] > oici[i] + maxaddedwci)
+						wci[i] = oici[i] + maxaddedwci;
+					if (wnc[i] < oinc[i] + maxaddedwnc)
+						wnc[i] = wnc[i] ;
+					if (wci[i] < oici[i] + maxaddedwci)
+						wnc[i] = wnc[i] ;
+					/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+					////////////////////////////////////////////////////////////////����t�����ڵ�I
+					ce = t - wcet + 1;
+					if (wci[i] > t - wcet + 1)
+					{
+						ici[i] = t - wcet + 1;
+				//		limitednumber = limitednumber + 1;
+					}
+					else
+					{
+						ici[i] = wci[i];
+					}
+					if (wnc[i] > t - wcet + 1)
+					{
+						inc[i] = t - wcet + 1;
+				//		limitednumber = limitednumber + 1;
+					}
+					else
+					{
+						inc[i] = wnc[i];
+					}
+					//////////////////////////////////////////////////////////////////////////////
+					//////////////////////////////////////////////////////////��¼i��t�ϵ�������
+					//////////////////////////////////////////////////////////////////////////////
+					diffw[i] = ici[i] - inc[i];///////////////////////////////////////����I^{diff}
+					i++;
+				}////////////////////////////////////////////////////////////////////////////////
+				///////////////////////////////////////////////////////////////////////�����ܸ���
+				i = 0;
+				interference = 0;
+				while (i<k)
+				{
+					interference = interference + inc[i];
+					i++;
+				}
+				j = 0;
+				while (j<m - 1)
+				{
+					l = 0;
+					o = 0;
+					while (l<k)
+					{
+						if (diffw[o]<diffw[l])
+						{
+							o = l;
+						}
+						l++;
+					}
+					interference = interference + diffw[o];
+					diffw[o] = 0;
+					j++;
+				}
+				////////////////////////////////////////////////////////////////////////////////
+				interference = int(interference / m);
+				if (interference + wcet <= t)
+				{
+					wcrt[k][wcet] = t;
+					/////////////////////////////////////////////////////����ÿ��������t�ϵ���С����
+					j = 0;
+					while (j < k)
+					{
+						if (ici[j]>interference)
+						{
+							ici[j] = interference;
+						}
+						if (inc[j]>interference)
+							inc[j] = interference;
+						j++;
+					}
+					i = 0;
+					while (i < k)
+					{
+						j = 0;
+						sumi= 0;
+						while (j<k)
+						{
+							if (j != i)
+							{
+								sumi = sumi+ inc[i];
+							}							
+							j++;
+						}
+						j = 0;
+						while (j < k)
+						{
+							diffi[j] = max(ici[j] - inc[j],0);
+							j++;
+						}
+						j = 0;
+						while (j<m - 1)
+						{
+							l = 0;
+							o = 0;
+							while (l<k)
+							{
+								if (l != i)
+								{
+									if (diffw[o] < diffw[l])
+									{
+										o = l;
+									}
+								}
+								l++;
+							}
+							sumi = sumi + diffi[o];
+							diffi[o] = 0;
+							j++;
+						}
+						minworkload[i] = MY_MAX(interference*m - sumi,0);
+						i++;
+					}
+					/////////////////////////////////////////////////////////////////////////////////
+					if (wcet == taskset[k][0])
+					{
+						schedulability[k] = 1;
+						taskset[k][3] = t;
+					}
+					break;
+				}
+				else
+				{
+					t = interference + wcet;
+				}
+			}
+			if (t>taskset[k][1])  ////////////////////Rk>Dk
+			{
+				wcrt[k][wcet] = taskset[k][1];
+				taskset[k][3] = taskset[k][1];
+				schedulability[k] = 0;
+				cout << "unsched at k = " << k << " because at a = " << wcet << " the wcrt = " << t << ", but D = " << taskset[k][1] << endl;
+				break;
+			}
+			i = 0;
+			while (i < k)
+			{
+				if (inc[i] <= t - wcet)
+					oinc[i] = inc[i];
+				else
+					oinc[i] = t - wcet;
+				if (oici[i] <= t - wcet)
+					oici[i] = ici[i];
+				else
+					oici[i] = t-wcet;
+				i++;
+			}
+			//cout << "k = " << k << " t = " << t << " wcet = " << wcet << "\n";
+			wcet++;
+		}
+		////////////////////////////////////////////////////////////////////////////////////////
+		//cout << "Outside: k = " << k << " t = " << t << " wcet = " << wcet << "\n";
+		if (schedulability[k] == 0)
+		{
+			break;
+		}
+		////////////////////////////////////////////////////////////////////////////////////////
+		k++;
 	}
+	//////////////////////////////////////////////////////////////////////////////////�жϿɵ�����
+	i = 0;
+	result = 1;
+	while (i<n)
+	{
+		if (schedulability[i] == 0)
+		{
+			result = 0;
+			break;
+		}
+		i++;
+	}
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	return result;
+}
 
+// GSYY2 overloaded to return only response time of task at priority 'curr_pr'
+	int ResponseTimeAnalysis_EPE::GSYY2(int n, int m, vector<vector<ValueType>> &taskset, vector<ValueType> &schedulability, int curr_pr)
+{
+	// if curr_pr is less than m, wcrt = wcet
+	//cout << "curr_pr = " << curr_pr << endl;
+	if(curr_pr < m)
+	{
+		return taskset[curr_pr][0];
+	}
+	double beginning, end, sumi, diffi[200];
+	int flagchange, result, i, j, k, t, l, o, x, y, z, y1, y2, x1, x2, x3, x4, limitednumber, maxaddedwnc, maxaddedwci;
+	int interference;
+	int ce, ce1, ce2, ce3, ce4, ce5, ce6, ce7, ce8, ce9;
+	flagchange = 1;
+	int diffw[1000], wnc[1000], wci[1000];
+	int wcrt[200][401];
+	int ici[200], inc[200];
+	int oici[200], oinc[200];
+	int addedwnc[200], addedwci[200], addedinc[200], addedici[200];
+	int minworkload[401];
+	int wcet;
+	k = 0;
+	////////////////////////////////////////////////////////////////////////Ϊ���񸳳�ʼWCRT
+	while (k<m) // WCRT = C for 'm' highest priority tasks
+	{
+		taskset[k][3] = taskset[k][0];
+		k++;
+	}
+	while (k<n) // WCRT = D (worst-case) for all the rest of the tasks
+	{
+		taskset[k][3] = taskset[k][1];
+		k++;
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////��ʼ������ɵ�����
+	k = 0;
+	// Initialize schedulability
+	while (k<m) // UR_k_a = a, a = 1..C for 'm' highest priority tasks; set sched = 1
+	{
+		i = 1;
+		while (i <= taskset[k][0])
+		{
+			wcrt[k][i] = i;
+			i++;
+		}
+		schedulability[k] = 1;
+		k++;
+	}
+	while (k<n) // for all other tasks, sched = 0
+	{
+		schedulability[k] = 0;
+		k++;
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////��ʼ��wcrt
+	k = 0;
+	// Initialize UR_k_0 = 0 for all n tasks
+	while (k<n)
+	{
+		wcrt[k][0] = 0;
+		k++;
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	k = m;
+	while (k<n)
+	{
+		//cout << "\tk = " << k << endl;
+		//////////////////////////////////////////////////////////////////////////��ʼ��inc��oici Initialize inc and oici
+		i = 0;
+		while (i<n)
+		{
+			oinc[i] = 0;
+			i++;
+		}
+		i = 0;
+		while (i<n)
+		{
+			oici[i] = 0;
+			i++;
+		}
+		i = 0;
+		while (i < 401)
+		{
+			minworkload[i] = 0;
+			i++;
+		}
+		//////////////////////////////////////////////////////////////////////////////////////////
+		wcet = 1;
+		//cout << "\t\twcrt:\t";
+		//for(int k_index = 0; k_index < 8; ++k_index)
+		//{
+		//	cout << wcrt[k_index][0] << "\t";
+		//}
+		//cout << endl;
+		/////////////////////////////////////////////////////////////////////����Ck=wcetʱk��WCRT
+		while (wcet <= taskset[k][0]) // Theorem 5 - Calc WCRT when Ck = WCET
+		{
+			t = wcrt[k][wcet - 1] + 1;
+			//if((curr_pr == 6) && (k == 6))
+			//{
+			//	cout << "\t\t\tk = " << k << "; wcet = " << wcet << "; t = " << t << endl;
+			//}
+			// CHANGE 1: no need to check if t <= D
+			while (t >= 0)//<= taskset[k][1])
+			{
+				x = t - wcrt[k][wcet - 1];              //���䳤��; Expand the length = initial guess - UR_k_a
+				i = 0;
+				while (i<k)// Calc the interference of hp task i on task k
+				{
+					// Eq 2 - Within the interval length, cvalculate W^NC
+					if (t%taskset[i][2]>taskset[i][0])	// t % Ti > Ci; so use Ci in Wnc formula
+					{
+						wnc[i] = int(t / taskset[i][2])*taskset[i][0] + taskset[i][0];
+					}
+					else 								// t % Ti < Ci; so use t % Ti in Wnc formular
+					{
+						wnc[i] = int(t / taskset[i][2])*taskset[i][0] + int(t%taskset[i][2]);
+					}
+					/////////////////////////////////////////////////////////////////////////////
+					//////////////////////////////////////////////////////////����t�����ڵ�W^{CI}
+					if (t <= taskset[i][0])
+					{
+						wci[i] = t;
+					}
+					else
+					{
+						if ((t - taskset[i][0]) % taskset[i][2] > taskset[i][2] - taskset[i][3])
+						{
+							wci[i] = (int((t - taskset[i][0]) / taskset[i][2]) + 1)*taskset[i][0] + (t - taskset[i][0]) % taskset[i][2] - taskset[i][2] + taskset[i][3];
+						}
+						else
+						{
+							wci[i] = (int((t - taskset[i][0]) / taskset[i][2]) + 1)*taskset[i][0];
+						}
+					}
+					/////////////////////////////////////////////////////////////////////////////////
+					/////////////////////////////////////////////////////����WNC��WCI���������
+					y = 0;
+					maxaddedwnc = 0;
+					while (y < taskset[i][2]&&y<=wcrt[k][wcet-1])
+					{
+						/////////////yʱ[0��wcrt[k][wcet-1])������i���nc����
+						x1=(wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0] + min(y, taskset[i][0]); ///////////////����i��[0��wcrt[k][wcet-1])�ϵ����nc���� 
+						y1 = 0;///////////////////////////////////////////////����k��[wcrt[k][wcet-1]-y,wcrt[k][wcet-1])����Сִ��ʱ�䣻���y��Ӧ�Ĺ���������ֵ����,����i��[wcrt[k][wcet-1]-y,wcrt[k][wcet-1])��������k����С����
+						while (wcrt[k][y1]+1 <= x + y)
+						{
+							y1++;
+							if (y1 == wcet)
+							{
+								break;
+							}
+						}
+						y1 = y1 - 1;
+						if (y1 > y)
+						{
+							y++;
+							continue;
+						}
+						if (y1 > taskset[i][0])
+							y1 = taskset[i][0];
+						if (y<= taskset[i][0])////////////////////////////////////////////////���x1������i��[0��wcrt[k][wcet-1])�϶�����k��������
+						{
+							x1 = x1 - y1;
+						}
+						else
+						{
+							y2 = 0;
+							while (wcrt[k][y2] <= wcrt[k][wcet - 1] - y + taskset[i][0])
+							{
+								y2++;
+							}
+							y2 = y2 - 1;   
+							x1 = x1-max(y1 + y2 - (wcet - 1), 0);
+						}
+						if (x1 < minworkload[i])
+						{
+							y++;
+							continue;///////////////////////////////////wcrt[k][wcet-1]-y������Ϊ�ͷ�ʱ��
+						}
+						else
+						{
+							if (minworkload[i] <= (wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0])/////////////y����Ӧ��Job����ִ��
+							{
+								if (taskset[i][3] <= y)
+								{
+									x2 = max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);////x2ΪW�������
+								}
+								else
+								{
+									x2 = min(min(taskset[i][3]-y,taskset[i][0]-y1),x)+ max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);
+								}
+							}
+							else////////////////////////////////////////////////////[0,wcrt[k][wcet-1])��i����ִ��minworkload[i]-(wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0]
+							{
+								y2 = minworkload[i] - (wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0]+y1;////////////////////���y��Ӧ�Ĺ���������ֵ���أ���ô�˹�����[wcrt[k][wcet-1]-y,wcrt[k][wcet-1])�ϵ���С����
+								if (taskset[i][3] <= y)
+								{
+									x2 = max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);////x2ΪW�������
+								}
+								else
+								{
+									x2 = min(min(taskset[i][3] - y, max(taskset[i][0] - y2,0)), x) + max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);
+								}							
+							}
+							if (maxaddedwnc < x2)
+							{
+								maxaddedwnc = x2;
+							}
+						}
+						y++;
+					}
+					y = 0;
+					maxaddedwci = 0;
+					while (y < taskset[i][2])
+					{
+						/////////////yʱ[0��wcrt[k][wcet-1])������i���nc����
+						if (y <= wcrt[k][wcet - 1])
+						{
+							x1 = (wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0] + min(y, taskset[i][0]) + max(min((wcrt[k][wcet - 1] - y) % taskset[i][2] - taskset[i][2] + taskset[i][3], taskset[i][0]), 0);
+							y1 = 0;/////////////////////////    [ R_k^{wcet-1}-y, R_k^{wcet-1} )�ϵ���С����ʱ��  
+							while (wcrt[k][y1]+1 <= x + y)
+							{
+								y1++;
+								if (y1 == wcet)
+								{
+									break;
+								}
+							}
+							y1 = y1 - 1;
+							if (y1 > y)
+							{
+								y++;
+								continue;
+							}
+							if (y1 > taskset[i][0])
+								y1 = taskset[i][0];
+							if (y <= taskset[i][0])
+							{
+								x1 = x1 - y1;
+							}
+							else
+							{
+								y2 = 0;
+								while (wcrt[k][y2] <= wcrt[k][wcet - 1] - y + taskset[i][0])
+								{
+									y2++;
+								}
+								y2 = y2 - 1;
+								x1 = x1 - max(y1 + y2 - (wcet - 1), 0);
+							}
+							if (x1 < minworkload[i])
+							{
+								y++;
+								continue;///////////////////////////////////wcrt[k][wcet-1]-y������Ϊ�ͷ�ʱ��
+							}
+							else
+							{
+								if (minworkload[i] <= (wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0] + max(min((wcrt[k][wcet - 1] - y) % taskset[i][2] - taskset[i][2] + taskset[i][3], taskset[i][0]), 0))/////////////y����Ӧ��Job����ִ��
+								{
+									if (taskset[i][3] <= y)
+									{
+										x2 = max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max(x + y - taskset[i][2], 0) % taskset[i][2], taskset[i][0]);
+									}
+									else
+									{
+										x2 = min(min(taskset[i][0]-y1, taskset[i][3]-y),x) + max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max(x + y - taskset[i][2], 0) % taskset[i][2], taskset[i][0]);
+									}
+								}
+								else////////////////////////////////////////////////////[0,wcrt[k][wcet-1])��i����ִ��minworkload[i]-(wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0]
+								{
+									y2 = minworkload[i] - (wcrt[k][wcet - 1] - y) / taskset[i][2] * taskset[i][0] - max(min((wcrt[k][wcet - 1] - y) % taskset[i][2] - taskset[i][2] + taskset[i][3], taskset[i][0]), 0)+y1;
+									if (taskset[i][3] <= y)
+									{
+										x2 = max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max(x + y - taskset[i][2], 0) % taskset[i][2], taskset[i][0]);
+									}
+									else
+									{
+										x2 = min(min(max(taskset[i][0] - y2,0), taskset[i][3] - y),x) + max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max(x + y - taskset[i][2], 0) % taskset[i][2], taskset[i][0]);
+									}
+								}
+								if (maxaddedwci < x2)
+								{
+									maxaddedwci = x2;
+								}
+							}
+						}
+						else///////////////////////y>wcrt[k][wcet-1]
+						{
+							y1 = wcet-1;///////////////////////////////////////////////////////////////�������i��wcrt[k][wcet-1]��ִ�У�����i��[0,wcrt[k][wcet-1])�ϵ���С����Ϊy1
+							if (y1>taskset[i][0])
+								y1 = taskset[i][0];
+							if (taskset[i][3] >= y)
+							{
+								x1 = min(taskset[i][0], wcrt[k][wcet-1]);////////////////[0,wcrt[k][wcet-1])�ϵ������
+								if (wcrt[k][wcet - 1] <= taskset[i][0])
+									x1 = x1 - y1;////////////////////////////////////////[0,wcrt[k][wcet-1])�ϵ�������
+								else
+								{
+									y2 = 0;
+									while (wcrt[k][y2] <= taskset[i][0])
+									{
+										y2++;
+										if (y2 == wcet)
+										{
+											break;
+										}
+									}
+									y2 = y2 - 1;
+									x1 = x1 - y2;
+								}
+							}
+							else
+							{
+								x1 = max(min(taskset[i][0], taskset[i][3] + wcrt[k][wcet - 1] - y), 0);
+								y2 = 0;
+								while (wcrt[k][y2] <= x1)
+								{
+									y2++;
+									if (y2 == wcet)
+									{
+										break;
+									}
+								}
+								y2 = y2 - 1;
+								x1 = x1 - y2;
+							}
+							if (x1 < minworkload[i])
+							{
+								y++;
+								continue;///////////////////////////////////wcrt[k][wcet-1]-y������Ϊ�ͷ�ʱ��
+							}
+							else
+							{
+								y2 = minworkload[i] + y1;////////     �������i��wcrt[k][wcet-1]֮��ִ�У� ��Ҫ����+��С����
+								if (taskset[i][3] <= y)
+									x2 = max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);        ////x2ΪW�������
+								else
+									x2 = min(min(max(min(taskset[i][0], taskset[i][3] - y + wcrt[k][wcet - 1]) - y2, 0),taskset[i][3]-y), x)+max((x + y - taskset[i][2]), 0) / taskset[i][2] * taskset[i][0] + min(max((x + y - taskset[i][2]), 0) % taskset[i][2], taskset[i][0]);
+								if (maxaddedwci < x2)
+								{
+									maxaddedwci = x2;
+								}
+							}
+						}
+						y++;
+					}
+					/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+					//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////�������W=I1+W2
+					if (wnc[i]>oinc[i] + maxaddedwnc)
+						wnc[i] = oinc[i] + maxaddedwnc;
+					if (wci[i] > oici[i] + maxaddedwci)
+						wci[i] = oici[i] + maxaddedwci;
+					if (wnc[i] < oinc[i] + maxaddedwnc)
+						wnc[i] = wnc[i] ;
+					if (wci[i] < oici[i] + maxaddedwci)
+						wnc[i] = wnc[i] ;
+					/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+					////////////////////////////////////////////////////////////////����t�����ڵ�I
+					// if((curr_pr == 6) && (k == 6))
+					// {
+					// 	cout << "\t\tLINE 2682 t = " << t << endl;
+					// }
+					ce = t - wcet + 1;
+					if (wci[i] > t - wcet + 1)
+					{
+						ici[i] = t - wcet + 1;
+				//		limitednumber = limitednumber + 1;
+					}
+					else
+					{
+						ici[i] = wci[i];
+					}
+					if (wnc[i] > t - wcet + 1)
+					{
+						inc[i] = t - wcet + 1;
+				//		limitednumber = limitednumber + 1;
+					}
+					else
+					{
+						inc[i] = wnc[i];
+					}
+					//////////////////////////////////////////////////////////////////////////////
+					//////////////////////////////////////////////////////////��¼i��t�ϵ�������
+					//////////////////////////////////////////////////////////////////////////////
+					diffw[i] = ici[i] - inc[i];///////////////////////////////////////����I^{diff}
+					i++;
+				}////////////////////////////////////////////////////////////////////////////////
+				///////////////////////////////////////////////////////////////////////�����ܸ���
+				i = 0;
+				interference = 0;
+				while (i<k)
+				{
+					interference = interference + inc[i];
+					i++;
+				}
+				j = 0;
+				while (j<m - 1)
+				{
+					l = 0;
+					o = 0;
+					while (l<k)
+					{
+						if (diffw[o]<diffw[l])
+						{
+							o = l;
+						}
+						l++;
+					}
+					interference = interference + diffw[o];
+					diffw[o] = 0;
+					j++;
+				}
+				////////////////////////////////////////////////////////////////////////////////
+				interference = int(interference / m);
+				//cout << "\t\tinterference = " << interference << "; wcet = " << wcet << "; interference + wcet = " << interference + wcet << "; t = " << t << endl;
+				if (interference + wcet <= t)
+				{
+					wcrt[k][wcet] = t;
+					/////////////////////////////////////////////////////����ÿ��������t�ϵ���С����
+					j = 0;
+					while (j < k)
+					{
+						if (ici[j]>interference)
+						{
+							ici[j] = interference;
+						}
+						if (inc[j]>interference)
+							inc[j] = interference;
+						j++;
+					}
+					i = 0;
+					while (i < k)
+					{
+						j = 0;
+						sumi= 0;
+						while (j<k)
+						{
+							if (j != i)
+							{
+								sumi = sumi+ inc[i];
+							}							
+							j++;
+						}
+						j = 0;
+						while (j < k)
+						{
+							diffi[j] = max(ici[j] - inc[j],0);
+							j++;
+						}
+						j = 0;
+						while (j<m - 1)
+						{
+							l = 0;
+							o = 0;
+							while (l<k)
+							{
+								if (l != i)
+								{
+									if (diffw[o] < diffw[l])
+									{
+										o = l;
+									}
+								}
+								l++;
+							}
+							sumi = sumi + diffi[o];
+							diffi[o] = 0;
+							j++;
+						}
+						minworkload[i] = MY_MAX(interference*m - sumi,0);
+						i++;
+					}
+					/////////////////////////////////////////////////////////////////////////////////
+					// a = C; done computing UR_k, RT = t
+					if (wcet == taskset[k][0])
+					{
+						schedulability[k] = 1;
+						taskset[k][3] = t;
+					}
+					// cout << "\t\twcrt after a = Ck; k = " << k << "; a = " << wcet << "; t = " << t << ":\t";
+					// for(int k_index = 0; k_index < 8; ++k_index)
+					// {
+					// 	cout << wcrt[k_index][0] << "\t";
+					// }
+					// cout << endl;
 
-	// ---------------------------------- Part 2b: EPE related calculation ------------------------------------------------
+					break;
+				}
+				else
+				{
+					t = interference + wcet;
+				}
+				// cout << "\t\twcrt after inner loop:\t";
+				// for(int k_index = 0; k_index < 8; ++k_index)
+				// {
+				// 	cout << wcrt[k_index][0] << "\t";
+				// }
+				// cout << endl;
+			}
+			// CHANGE 2: continue computing R even if R > D
+			// if (t>taskset[k][1])  ////////////////////Rk>Dk
+			// {
+			// 	wcrt[k][wcet] = taskset[k][1];
+			// 	taskset[k][3] = taskset[k][1];
+			// 	schedulability[k] = 0;
+			// 	break;
+			// }
+			i = 0;
+			while (i < k)
+			{
+				if (inc[i] <= t - wcet)
+					oinc[i] = inc[i];
+				else
+					oinc[i] = t - wcet;
+				if (oici[i] <= t - wcet)
+					oici[i] = ici[i];
+				else
+					oici[i] = t-wcet;
+				i++;
+			}
+			//cout << "k = " << k << " t = " << t << " wcet = " << wcet << "\n";
+			wcet++;
+		}
+		////////////////////////////////////////////////////////////////////////////////////////CHANGE 3
+		//cout << "Outside: k = " << k << " t = " << t << " wcet = " << wcet << "\n";
+		//CHANGE 3: stop and return response time when priority reaches curr_pr
+		// if (schedulability[k] == 0)
+		// {
+		// 	break;
+		// }
+		if(k == curr_pr)
+		{
+			//cout << "a = " << wcet << "; response time: " << t << endl;
+			//cout << "This is executed; k = " << k << "; curr_pr = " << curr_pr << "; t = " << t << endl; 
+			return t; 
+		}
+		////////////////////////////////////////////////////////////////////////////////////////
+		k++;
+	}
+	//////////////////////////////////////////////////////////////////////////////////�жϿɵ�����
+	cout << "Control never reaches here\n";
+	i = 0;
+	result = 1;
+	while (i<n)
+	{
+		if (schedulability[i] == 0)
+		{
+			result = 0;
+			break;
+		}
+		i++;
+	}
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	return result;
+}
 
 	pair<bool, vector<ValueType>> ResponseTimeAnalysis_EPE::ComputeRTAGSYY2(MultiProcessorSystem & rcSystem, const PriorityAssignment & rcPA)
 	{

@@ -59,12 +59,6 @@ namespace MPScheduling {
 	};
 	// *********************** Aug.5 Patch one: Add ZLL class for experiments ******************************
 
-	/**
-	 * @brief Implementation of EPE (EMSOFT 2021) schedulability analysis
-	 * @date  Mar. 30, 2022
-	 * @version v1 for initial test 
-	 */
-
 	class ResponseTimeAnalysis_EPE{
 	public: 
 			ResponseTimeAnalysis_EPE();
@@ -81,7 +75,7 @@ namespace MPScheduling {
 		// GSYY Overloaded
 		ValueType GSYY_RTTerminateOnBound(MultiProcessorSystem & rcSystem, int iTaskIndex, vector<vector<ValueType>> & rvectorResponseTime, const PriorityAssignment & rcPA, ValueType cBound, int a);
 
-		// GSYY2 Interfaces
+		// GSYY2 Interface
 		pair<bool, vector<ValueType>> ResponseTimeAnalysis_EPE::ComputeRTAGSYY2(MultiProcessorSystem & rcSystem, const PriorityAssignment & rcPA);
 
 		// GSYY2 (EPE) interface to compute response time of task at priority 'curr_pr'
@@ -96,6 +90,12 @@ namespace MPScheduling {
 
 		// ----- Part 2a: GSYY Overloaded -----
 		ValueType GSYY_RHS(MultiProcessorSystem & rcSystem, int iTaskIndex, ValueType t, vector<vector<ValueType>> & rvectorResponseTime, const PriorityAssignment & rcPA, int a);
+		
+		// ----- Part 3: GSYY2 from the authors -----
+		int ResponseTimeAnalysis_EPE::GSYY2(int n, int m, vector<vector<ValueType>> &taskset, vector<ValueType> &schedulability);
+
+		// GSYY2 overloaded to return only response time of task at priority 'curr_pr'
+		int ResponseTimeAnalysis_EPE::GSYY2(int n, int m, vector<vector<ValueType>> &taskset, vector<ValueType> &schedulability, int curr_pr);
 	};
 
 
