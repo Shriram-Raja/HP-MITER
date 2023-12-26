@@ -14,6 +14,7 @@ The following is the list of priority assignment algorithms and schedulability t
 
 Refer to _MultiProcessorSystem.cpp_
 
+**IMPORTANT NOTE:** The MITER algorithm uses the CPLEX optimization solver, however as it is proprietary, it has not been included in this repository.
 
 ## Schedulability Analyses
 - Deadline Analysis with Limited Carry-in (DA-LC): implementation of the method defined in [[3]](#References).
@@ -22,8 +23,6 @@ Refer to _MultiProcessorSystem.cpp_
 - EPE-ZLL: implementation of the test defined in [[6]](#References). This is called GSYY2 in the code.
 
 Refer to _SchedulabilityAnalysis.cpp_
-
-**IMPORTANT NOTE:** The MITER algorithm uses the CPLEX optimization solver, however as it is proprietary, it has not been included in this repository.
 
 
 ## How to run *main.cpp*
