@@ -23,9 +23,7 @@ Refer to _MultiProcessorSystem.cpp_
 
 Refer to _SchedulabilityAnalysis.cpp_
 
-
-## **IMPORTANT NOTE:** 
-- The MITER algorithm uses the CPLEX optimization solver, however as it is proprietary, it has not been included in this repository.
+**IMPORTANT NOTE:** The MITER algorithm uses the CPLEX optimization solver, however as it is proprietary, it has not been included in this repository.
 
 
 ## How to run *main.cpp*
