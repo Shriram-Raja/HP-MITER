@@ -39,10 +39,10 @@ void Experiment(double util_lb, double util_ub, int num_processors, int num_task
 	param.iConstrainedDeadline = constrained_deadline;
 	const pair<double, double> kUSweepRange = {util_lb, util_ub};	
 	
-	// Normal test
+	// Experiment 1
 	GenerateUSweepTestCases(param, kUSweepRange, num_point, folder);
 
-	// Generate test cases according to ML for RT
+	// Experiment 2 for comparison with ML for RT
 	// GenerateUSweepTestCases(param, kUSweepRange, num_point, folder, 1);
 
 	TestUSweep(kUSweepRange, num_point, folder);	
